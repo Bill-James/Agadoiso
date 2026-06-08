@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGÁDOISÓ - Loja Oficial 2026</title>
+    <style>
+        :root { --primary: #003087; --accent: #00aaff; }
+        body { font-family: Arial, sans-serif; margin:0; background:#f8f9fa; color:#333; }
+        header { background: var(--primary); color:white; padding:1rem; text-align:center; }
+        .tabs { display:flex; background:#ddd; }
+        .tab { flex:1; padding:1rem; text-align:center; cursor:pointer; background:#eee; }
+        .tab.active { background:white; font-weight:bold; border-bottom:3px solid var(--accent); }
+        .content { padding:20px; max-width:1200px; margin:auto; }
+        .product-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:20px; }
+        .product { border:1px solid #ddd; border-radius:8px; padding:15px; background:white; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+        .product img { width:100%; height:180px; object-fit:contain; background:#f0f0f0; border-radius:4px; }
+        .price { font-size:1.3rem; font-weight:bold; color:#d00; }
+        .admin-btn { position:fixed; top:20px; right:20px; padding:10px 15px; background:#333; color:white; border:none; border-radius:4px; cursor:pointer; }
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; }
+        .modal-content { background:white; padding:25px; border-radius:8px; width:90%; max-width:500px; }
+        .cart { position:fixed; bottom:20px; right:20px; background:var(--accent); color:white; padding:15px 20px; border-radius:50px; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
+        .qr { text-align:center; margin:20px 0; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>AGÁDOISÓ</h1>
+    <p>Tabela Oficial de Preços 2026 • Luanda, Angola</p>
+</header>
+
+<div class="tabs">
+    <div class="tab active" onclick="switchTab(0)">Toucas</div>
+    <div class="tab" onclick="switchTab(1)">Uniformes</div>
+</div>
+
+<div class="content" id="tab0">
+    <div class="product-grid" id="toucas-grid"></div>
+</div>
+
+<div class="content" id="tab1" style="display:none">
+    <div class="product-grid" id="uniformes-grid"></div>
+</div>
+
+<button class="admin-btn" onclick="showAdmin()">👤 Admin</button>
+
+<div id="cart-btn" class="cart" onclick="showCart()">
+    🛒 Carrinho (<span id="cart-count">0</span>)
+</div>
+
+<!-- Admin Modal -->
+<div id="admin-modal" class="modal">
+    <div class="modal-content">
+        <h2>Modo Administrador</h2>
+        <input type="password" id="admin-pass" placeholder="Senha" style="width:100%; padding:10px; margin:10px 0;">
+        <button onclick="loginAdmin()">Entrar</button>
+        <button onclick="closeModal()">Fechar</button>
+        <div id="admin-panel" style="display:none; margin-top:20px;">
+            <h3>Editar Stocks</h3>
+            <div id="admin-products"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Cart Modal -->
+<div id="cart-modal" class="modal">
+    <div class="modal-content">
+        <h2>Seu Carrinho</h2>
+        <div id="cart-items"></div>
+        <h3>Total: <span id="cart-total">0</span> Kz</h3>
+        <button onclick="checkout()">Finalizar Compra (Simulação)</button>
+        <button onclick="closeCart()">Fechar</button>
+    </div>
+</div>
+
+<div class="content">
+    <div class="qr">
+        <p><strong>Escaneie para aceder à loja:</strong></p>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://seu-usuario.github.io/agadoiso-loja" alt="QR Code" style="max-width:250px;">
+        <p>(Substitua o link pelo seu GitHub Pages)</p>
+    </div>
+</div>
+
+<script>
+// Produtos Toucas
+const toucas = [
+    {id:1, name:"CNIL Touca Desatada Normal", colors:"Amarelo / Preto / Cinzento", price:11000, stock:50, img:"https://via.placeholder.com/300x200/ffd700/000?text=Touca+1"},
+    {id:2, name:"CNIL Touca Normal", colors:"Preto / Azul / Cinzento", price:9000, stock:60, img:"https://via.placeholder.com/300x200/0000ff/fff?text=Touca+2"},
+    {id:3, name:"Touca Agádoisó Minimalista", colors:"Preto / Azul / Cinzento", price:8000, stock:80, img:"https://via.placeholder.com/300x200/111/fff?text=Minimalista"},
+    {id:4, name:"Touca Afro", colors:"Preto", price:18000, stock:30, img:"https://via.placeholder.com/300x200/000/fff?text=Afro"},
+    {id:5, name:"Touca Agádoisó de Criança", colors:"Azul / Rosa", price:9500, stock:45, img:"https://via.placeholder.com/300x200/00f/f0f?text=Criança"}
+];
+
+// Produtos Uniformes
+const uniformes = [
+    {id:6, name:"T-Shirt (Nome nas costas - Amarelinhos)", price:35000, stock:40, img:"https://via.placeholder.com/300x200/ffd700/000?text=T-Shirt+Nome"},
+    {id:7, name:"T-Shirt (Sem nome)", price:33000, stock:50, img:"https://via.placeholder.com/300x200/fff/000?text=T-Shirt"},
+    {id:8, name:"Calção", price:30000, stock:60, img:"https://via.placeholder.com/300x200/00f/fff?text=Calção"},
+    {id:9, name:"Calça", price:47000, stock:35, img:"https://via.placeholder.com/300x200/000/fff?text=Calça"},
+    {id:10, name:"Casaco", price:54000, stock:25, img:"https://via.placeholder.com/300x200/333/fff?text=Casaco"},
+    {id:11, name:"Mayo Lycra", price:48000, stock:30, img:"https://via.placeholder.com/300x200/f00/fff?text=Mayo"},
+    // ... adicionei só alguns, podes expandir facilmente
+];
+
+let cart = [];
+let isAdmin = false;
+
+// Render products
+function renderProducts() {
+    const tg = document.getElementById('toucas-grid');
+    tg.innerHTML = toucas.map(p => `
+        <div class="product">
+            <img src="${p.img}" alt="${p.name}">
+            <h3>${p.name}</h3>
+            <p><strong>Cor:</strong> ${p.colors || '—'}</p>
+            <p class="price">${p.price.toLocaleString('pt-AO')} Kz</p>
+            <p>Stock: <span id="stock-${p.id}">${p.stock}</span></p>
+            <input type="number" id="qty-${p.id}" value="1" min="1" max="${p.stock}" style="width:60px">
+            <button onclick="addToCart(${p.id}, 'touca')">Adicionar</button>
+        </div>
+    `).join('');
+
+    const ug = document.getElementById('uniformes-grid');
+    ug.innerHTML = uniformes.map(p => `
+        <div class="product">
+            <img src="${p.img}" alt="${p.name}">
+            <h3>${p.name}</h3>
+            <p class="price">${p.price.toLocaleString('pt-AO')} Kz</p>
+            <p>Stock: <span id="stock-${p.id}">${p.stock}</span></p>
+            <input type="number" id="qty-${p.id}" value="1" min="1" max="${p.stock}" style="width:60px">
+            <button onclick="addToCart(${p.id}, 'uniforme')">Adicionar</button>
+        </div>
+    `).join('');
+}
+
+function addToCart(id, type) {
+    const qty = parseInt(document.getElementById(`qty-${id}`).value);
+    const products = type === 'touca' ? toucas : uniformes;
+    const prod = products.find(p => p.id === id);
+    
+    if (prod.stock < qty) return alert("Stock insuficiente!");
+    
+    cart.push({...prod, qty});
+    updateCartCount();
+    alert(`${qty}x ${prod.name} adicionado!`);
+}
+
+function updateCartCount() {
+    document.getElementById('cart-count').textContent = cart.length;
+}
+
+function showCart() {
+    if (cart.length === 0) return alert("Carrinho vazio!");
+    
+    let html = cart.map((item,i) => `
+        <p>${item.qty}x ${item.name} — ${(item.price*item.qty).toLocaleString('pt-AO')} Kz 
+        <button onclick="removeFromCart(${i})">Remover</button></p>
+    `).join('');
+    
+    document.getElementById('cart-items').innerHTML = html;
+    const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+    document.getElementById('cart-total').textContent = total.toLocaleString('pt-AO');
+    document.getElementById('cart-modal').style.display = 'flex';
+}
+
+function removeFromCart(i) {
+    cart.splice(i,1);
+    showCart();
+    updateCartCount();
+}
+
+function checkout() {
+    alert("✅ Compra simulada com sucesso! (Total: " + document.getElementById('cart-total').textContent + " Kz)");
+    cart = [];
+    updateCartCount();
+    closeCart();
+}
+
+// Tab switch
+function switchTab(n) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===n));
+    document.getElementById('tab0').style.display = n===0 ? 'block' : 'none';
+    document.getElementById('tab1').style.display = n===1 ? 'block' : 'none';
+}
+
+// Admin
+function showAdmin() {
+    document.getElementById('admin-modal').style.display = 'flex';
+    document.getElementById('admin-pass').focus();
+}
+
+function loginAdmin() {
+    if (document.getElementById('admin-pass').value === 'admin2026') {
+        isAdmin = true;
+        document.getElementById('admin-panel').style.display = 'block';
+        renderAdminPanel();
+    } else {
+        alert("Senha incorreta!");
+    }
+}
+
+function renderAdminPanel() {
+    let html = '';
+    [...toucas, ...uniformes].forEach(p => {
+        html += `
+            <p>${p.name} 
+            <input type="number" value="${p.stock}" onchange="updateStock(${p.id}, this.value)" style="width:80px">
+            </p>`;
+    });
+    document.getElementById('admin-products').innerHTML = html;
+}
+
+function updateStock(id, newStock) {
+    const all = [...toucas, ...uniformes];
+    const prod = all.find(p => p.id === id);
+    if (prod) prod.stock = parseInt(newStock);
+    renderProducts();
+}
+
+// Helpers
+function closeModal() { document.getElementById('admin-modal').style.display = 'none'; }
+function closeCart() { document.getElementById('cart-modal').style.display = 'none'; }
+
+// Init
+renderProducts();
+</script>
+</body>
+</html>
