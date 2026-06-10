@@ -1,229 +1,650 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AGÁDOISÓ - Loja Oficial 2026</title>
-    <style>
-        :root { --primary: #003087; --accent: #00aaff; }
-        body { font-family: Arial, sans-serif; margin:0; background:#f8f9fa; color:#333; }
-        header { background: var(--primary); color:white; padding:1rem; text-align:center; }
-        .tabs { display:flex; background:#ddd; }
-        .tab { flex:1; padding:1rem; text-align:center; cursor:pointer; background:#eee; }
-        .tab.active { background:white; font-weight:bold; border-bottom:3px solid var(--accent); }
-        .content { padding:20px; max-width:1200px; margin:auto; }
-        .product-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:20px; }
-        .product { border:1px solid #ddd; border-radius:8px; padding:15px; background:white; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
-        .product img { width:100%; height:180px; object-fit:contain; background:#f0f0f0; border-radius:4px; }
-        .price { font-size:1.3rem; font-weight:bold; color:#d00; }
-        .admin-btn { position:fixed; top:20px; right:20px; padding:10px 15px; background:#333; color:white; border:none; border-radius:4px; cursor:pointer; }
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; }
-        .modal-content { background:white; padding:25px; border-radius:8px; width:90%; max-width:500px; }
-        .cart { position:fixed; bottom:20px; right:20px; background:var(--accent); color:white; padding:15px 20px; border-radius:50px; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
-        .qr { text-align:center; margin:20px 0; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agádoisó — Loja</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --gold: #c8a84b;
+    --gold-light: #e8cc7a;
+    --gold-pale: #f5e9c3;
+    --white: #ffffff;
+    --off-white: #f8f6f0;
+    --gray: #6b7280;
+    --border: rgba(200,168,75,0.25);
+    --success: #2d6a4f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--navy);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 1.25rem 1rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .logo span { color: var(--white); }
+  .tagline {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.7;
+    margin-top: 0.2rem;
+  }
+
+  /* CART BADGE */
+  .cart-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    border-radius: 50px;
+    padding: 0.85rem 1.4rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    box-shadow: 0 4px 20px rgba(200,168,75,0.35);
+    transition: transform 0.15s, opacity 0.15s;
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+  }
+  .cart-btn.visible { opacity: 1; transform: translateY(0); pointer-events: all; }
+  .cart-btn:active { transform: scale(0.97); }
+  .cart-count {
+    background: var(--navy);
+    color: var(--gold);
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* CATEGORIES */
+  .categories {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+  }
+  .categories::-webkit-scrollbar { display: none; }
+  .cat-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: rgba(255,255,255,0.6);
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .cat-btn.active, .cat-btn:hover {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--navy);
+  }
+
+  /* PRODUCTS GRID */
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    padding: 1.5rem 1.25rem 0.75rem;
+    opacity: 0.9;
+  }
+  .products {
+    padding: 0 1rem 6rem;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .product-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .product-card:hover { background: rgba(200,168,75,0.07); border-color: rgba(200,168,75,0.4); }
+  .product-card.out-of-stock { opacity: 0.4; pointer-events: none; }
+  .prod-info { flex: 1; }
+  .prod-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--white);
+    line-height: 1.3;
+  }
+  .prod-meta {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.45);
+    margin-top: 0.2rem;
+  }
+  .prod-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    color: var(--gold);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .stock-badge {
+    font-size: 0.68rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 50px;
+    font-weight: 500;
+    margin-top: 0.3rem;
+    display: inline-block;
+  }
+  .badge-ok { background: rgba(45,106,79,0.25); color: #5fcc96; border: 1px solid rgba(95,204,150,0.2); }
+  .badge-low { background: rgba(200,168,75,0.15); color: var(--gold-light); border: 1px solid rgba(200,168,75,0.2); }
+  .badge-out { background: rgba(180,50,50,0.15); color: #f47272; border: 1px solid rgba(244,114,114,0.2); }
+
+  /* ADD BTN */
+  .add-btn {
+    background: transparent;
+    border: 1.5px solid var(--gold);
+    color: var(--gold);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .add-btn:active { background: var(--gold); color: var(--navy); transform: scale(0.93); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,22,40,0.85);
+    z-index: 300;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #0f1e33;
+    border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 540px;
+    padding: 1.5rem 1.25rem 2.5rem;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(40px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+  .modal-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 1.25rem;
+  }
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    color: var(--gold);
+    letter-spacing: 0.06em;
+    margin-bottom: 0.25rem;
+  }
+  .modal-subtitle { font-size: 0.82rem; color: rgba(255,255,255,0.45); margin-bottom: 1.5rem; }
+
+  /* CART ITEMS */
+  .cart-list { display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1.5rem; max-height: 40vh; overflow-y: auto; }
+  .cart-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .cart-item-name { font-size: 0.88rem; font-weight: 500; flex: 1; }
+  .cart-item-qty {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .qty-btn {
+    background: rgba(200,168,75,0.15);
+    border: 1px solid var(--border);
+    color: var(--gold);
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .qty-num { font-size: 0.9rem; font-weight: 500; min-width: 18px; text-align: center; }
+  .cart-item-price { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: var(--gold); white-space: nowrap; }
+
+  /* FORM */
+  .form-group { margin-bottom: 1rem; }
+  .form-label { font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 0.4rem; display: block; }
+  .form-input {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.75rem 1rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus { border-color: var(--gold); }
+  .form-input::placeholder { color: rgba(255,255,255,0.25); }
+
+  /* TOTAL */
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .total-label { font-size: 0.82rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em; }
+  .total-amount { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--gold); }
+
+  /* SUBMIT BTN */
+  .submit-btn {
+    width: 100%;
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .submit-btn:active { opacity: 0.85; transform: scale(0.98); }
+
+  /* EMPTY STATE */
+  .empty-cart {
+    text-align: center;
+    padding: 2rem 0;
+    color: rgba(255,255,255,0.3);
+    font-size: 0.88rem;
+  }
+
+  /* DIVIDER */
+  .category-divider {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+    color: rgba(200,168,75,0.5);
+    padding: 1rem 1.25rem 0.4rem;
+    border-top: 1px solid var(--border);
+    margin-top: 0.5rem;
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: rgba(255,255,255,0.3);
+    font-size: 0.9rem;
+  }
+</style>
 </head>
 <body>
 
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ══════════════════════════════════════════════
+  // 🔧 CONFIGURAÇÃO FIREBASE — substitui com os teus dados
+  // ══════════════════════════════════════════════
+  const firebaseConfig = {
+    apiKey: "SUBSTITUI_AQUI",
+    authDomain: "SUBSTITUI_AQUI",
+    projectId: "SUBSTITUI_AQUI",
+    storageBucket: "SUBSTITUI_AQUI",
+    messagingSenderId: "SUBSTITUI_AQUI",
+    appId: "SUBSTITUI_AQUI"
+  };
+
+  // ══════════════════════════════════════════════
+  // 📱 NÚMERO WHATSAPP DO VENDEDOR (com código do país, sem +)
+  // ══════════════════════════════════════════════
+  window.WHATSAPP_NUMBER = "244900000000"; // <- substitui
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window._db = db;
+  window._collection = collection;
+  window._onSnapshot = onSnapshot;
+  window._doc = doc;
+  window._updateDoc = updateDoc;
+
+  // Carrega produtos em tempo real
+  const prodRef = collection(db, "produtos");
+  onSnapshot(prodRef, (snap) => {
+    const produtos = [];
+    snap.forEach(d => produtos.push({ id: d.id, ...d.data() }));
+    window.renderProducts(produtos);
+  });
+</script>
+
 <header>
-    <h1>AGÁDOISÓ</h1>
-    <p>Tabela Oficial de Preços 2026 • Luanda, Angola</p>
+  <div class="logo">Agá<span>doisó</span></div>
+  <div class="tagline">Clube Náutico de Luanda</div>
 </header>
 
-<div class="tabs">
-    <div class="tab active" onclick="switchTab(0)">Toucas</div>
-    <div class="tab" onclick="switchTab(1)">Uniformes</div>
+<!-- FILTROS DE CATEGORIA -->
+<div class="categories">
+  <button class="cat-btn active" onclick="filterCat('todos')">Todos</button>
+  <button class="cat-btn" onclick="filterCat('uniformes')">Uniformes</button>
+  <button class="cat-btn" onclick="filterCat('toucas')">Toucas</button>
+  <button class="cat-btn" onclick="filterCat('swim')">Swim Team</button>
+  <button class="cat-btn" onclick="filterCat('remo')">Remo</button>
+  <button class="cat-btn" onclick="filterCat('vela')">Vela</button>
+  <button class="cat-btn" onclick="filterCat('canoagem')">Canoagem</button>
 </div>
 
-<div class="content" id="tab0">
-    <div class="product-grid" id="toucas-grid"></div>
-</div>
+<!-- LISTA DE PRODUTOS -->
+<div id="products-container" class="products" style="padding-top:0.75rem"></div>
 
-<div class="content" id="tab1" style="display:none">
-    <div class="product-grid" id="uniformes-grid"></div>
-</div>
+<!-- BOTÃO CARRINHO -->
+<button class="cart-btn" id="cart-btn" onclick="openCart()">
+  🛒 Ver encomenda
+  <span class="cart-count" id="cart-count">0</span>
+</button>
 
-<button class="admin-btn" onclick="showAdmin()">👤 Admin</button>
+<!-- MODAL CARRINHO / ENCOMENDA -->
+<div class="modal-overlay" id="modal" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal-inner">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Encomenda</div>
+    <div class="modal-subtitle" id="modal-subtitle">Confirma os artigos antes de enviar</div>
 
-<div id="cart-btn" class="cart" onclick="showCart()">
-    🛒 Carrinho (<span id="cart-count">0</span>)
-</div>
+    <div class="cart-list" id="cart-list"></div>
 
-<!-- Admin Modal -->
-<div id="admin-modal" class="modal">
-    <div class="modal-content">
-        <h2>Modo Administrador</h2>
-        <input type="password" id="admin-pass" placeholder="Senha" style="width:100%; padding:10px; margin:10px 0;">
-        <button onclick="loginAdmin()">Entrar</button>
-        <button onclick="closeModal()">Fechar</button>
-        <div id="admin-panel" style="display:none; margin-top:20px;">
-            <h3>Editar Stocks</h3>
-            <div id="admin-products"></div>
-        </div>
+    <div class="total-row">
+      <span class="total-label">Total</span>
+      <span class="total-amount" id="total-display">0 Kz</span>
     </div>
-</div>
 
-<!-- Cart Modal -->
-<div id="cart-modal" class="modal">
-    <div class="modal-content">
-        <h2>Seu Carrinho</h2>
-        <div id="cart-items"></div>
-        <h3>Total: <span id="cart-total">0</span> Kz</h3>
-        <button onclick="checkout()">Finalizar Compra (Simulação)</button>
-        <button onclick="closeCart()">Fechar</button>
+    <div class="form-group">
+      <label class="form-label">O teu nome</label>
+      <input class="form-input" id="cliente-nome" type="text" placeholder="Ex: Maria Silva" />
     </div>
-</div>
+    <div class="form-group">
+      <label class="form-label">Notas (opcional)</label>
+      <input class="form-input" id="cliente-notas" type="text" placeholder="Ex: tamanho M, cor azul..." />
+    </div>
 
-<div class="content">
-    <div class="qr">
-        <p><strong>Escaneie para aceder à loja:</strong></p>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://seu-usuario.github.io/agadoiso-loja" alt="QR Code" style="max-width:250px;">
-        <p>(Substitua o link pelo seu GitHub Pages)</p>
-    </div>
+    <button class="submit-btn" onclick="enviarWhatsApp()">
+      Enviar pelo WhatsApp →
+    </button>
+  </div>
 </div>
 
 <script>
-// Produtos Toucas
-const toucas = [
-    {id:1, name:"CNIL Touca Desatada Normal", colors:"Amarelo / Preto / Cinzento", price:11000, stock:50, img:"https://via.placeholder.com/300x200/ffd700/000?text=Touca+1"},
-    {id:2, name:"CNIL Touca Normal", colors:"Preto / Azul / Cinzento", price:9000, stock:60, img:"https://via.placeholder.com/300x200/0000ff/fff?text=Touca+2"},
-    {id:3, name:"Touca Agádoisó Minimalista", colors:"Preto / Azul / Cinzento", price:8000, stock:80, img:"https://via.placeholder.com/300x200/111/fff?text=Minimalista"},
-    {id:4, name:"Touca Afro", colors:"Preto", price:18000, stock:30, img:"https://via.placeholder.com/300x200/000/fff?text=Afro"},
-    {id:5, name:"Touca Agádoisó de Criança", colors:"Azul / Rosa", price:9500, stock:45, img:"https://via.placeholder.com/300x200/00f/f0f?text=Criança"}
-];
+// ══════════════════════════════════════════════
+// DADOS & ESTADO
+// ══════════════════════════════════════════════
+let todosOsProdutos = [];
+let categoriaAtiva = 'todos';
+let carrinho = {}; // { id: { produto, qty } }
 
-// Produtos Uniformes
-const uniformes = [
-    {id:6, name:"T-Shirt (Nome nas costas - Amarelinhos)", price:35000, stock:40, img:"https://via.placeholder.com/300x200/ffd700/000?text=T-Shirt+Nome"},
-    {id:7, name:"T-Shirt (Sem nome)", price:33000, stock:50, img:"https://via.placeholder.com/300x200/fff/000?text=T-Shirt"},
-    {id:8, name:"Calção", price:30000, stock:60, img:"https://via.placeholder.com/300x200/00f/fff?text=Calção"},
-    {id:9, name:"Calça", price:47000, stock:35, img:"https://via.placeholder.com/300x200/000/fff?text=Calça"},
-    {id:10, name:"Casaco", price:54000, stock:25, img:"https://via.placeholder.com/300x200/333/fff?text=Casaco"},
-    {id:11, name:"Mayo Lycra", price:48000, stock:30, img:"https://via.placeholder.com/300x200/f00/fff?text=Mayo"},
-    // ... adicionei só alguns, podes expandir facilmente
-];
+// ══════════════════════════════════════════════
+// RENDER PRODUTOS
+// ══════════════════════════════════════════════
+window.renderProducts = function(produtos) {
+  todosOsProdutos = produtos;
+  aplicarFiltro();
+};
 
-let cart = [];
-let isAdmin = false;
+function aplicarFiltro() {
+  const container = document.getElementById('products-container');
+  let filtrados = todosOsProdutos;
 
-// Render products
-function renderProducts() {
-    const tg = document.getElementById('toucas-grid');
-    tg.innerHTML = toucas.map(p => `
-        <div class="product">
-            <img src="${p.img}" alt="${p.name}">
-            <h3>${p.name}</h3>
-            <p><strong>Cor:</strong> ${p.colors || '—'}</p>
-            <p class="price">${p.price.toLocaleString('pt-AO')} Kz</p>
-            <p>Stock: <span id="stock-${p.id}">${p.stock}</span></p>
-            <input type="number" id="qty-${p.id}" value="1" min="1" max="${p.stock}" style="width:60px">
-            <button onclick="addToCart(${p.id}, 'touca')">Adicionar</button>
-        </div>
-    `).join('');
+  if (categoriaAtiva !== 'todos') {
+    filtrados = todosOsProdutos.filter(p =>
+      (p.categoria || '').toLowerCase().includes(categoriaAtiva)
+    );
+  }
 
-    const ug = document.getElementById('uniformes-grid');
-    ug.innerHTML = uniformes.map(p => `
-        <div class="product">
-            <img src="${p.img}" alt="${p.name}">
-            <h3>${p.name}</h3>
-            <p class="price">${p.price.toLocaleString('pt-AO')} Kz</p>
-            <p>Stock: <span id="stock-${p.id}">${p.stock}</span></p>
-            <input type="number" id="qty-${p.id}" value="1" min="1" max="${p.stock}" style="width:60px">
-            <button onclick="addToCart(${p.id}, 'uniforme')">Adicionar</button>
-        </div>
-    `).join('');
+  if (filtrados.length === 0) {
+    container.innerHTML = '<div class="no-results">Sem produtos nesta categoria.</div>';
+    return;
+  }
+
+  container.innerHTML = filtrados.map(p => produtoHTML(p)).join('');
 }
 
-function addToCart(id, type) {
-    const qty = parseInt(document.getElementById(`qty-${id}`).value);
-    const products = type === 'touca' ? toucas : uniformes;
-    const prod = products.find(p => p.id === id);
-    
-    if (prod.stock < qty) return alert("Stock insuficiente!");
-    
-    cart.push({...prod, qty});
-    updateCartCount();
-    alert(`${qty}x ${prod.name} adicionado!`);
+function produtoHTML(p) {
+  const stock = p.stock || 0;
+  const esgotado = stock === 0;
+  let badgeClass = 'badge-ok';
+  let badgeText = `${stock} em stock`;
+  if (stock === 0) { badgeClass = 'badge-out'; badgeText = 'Esgotado'; }
+  else if (stock <= 3) { badgeClass = 'badge-low'; badgeText = `Últimos ${stock}`; }
+
+  return `
+    <div class="product-card${esgotado ? ' out-of-stock' : ''}" id="card-${p.id}">
+      <div class="prod-info">
+        <div class="prod-name">${p.nome}</div>
+        <div class="prod-meta">${p.categoria || 'Geral'} ${p.validade ? '· ' + p.validade : ''}</div>
+        <span class="stock-badge ${badgeClass}">${badgeText}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.5rem">
+        <div class="prod-price">${formatKz(p.preco)}</div>
+        ${!esgotado ? `<button class="add-btn" onclick="addToCart('${p.id}')">+</button>` : ''}
+      </div>
+    </div>
+  `;
 }
 
-function updateCartCount() {
-    document.getElementById('cart-count').textContent = cart.length;
+function formatKz(v) {
+  return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 })
+    .format(v).replace('AOA', 'Kz').trim();
 }
 
-function showCart() {
-    if (cart.length === 0) return alert("Carrinho vazio!");
-    
-    let html = cart.map((item,i) => `
-        <p>${item.qty}x ${item.name} — ${(item.price*item.qty).toLocaleString('pt-AO')} Kz 
-        <button onclick="removeFromCart(${i})">Remover</button></p>
-    `).join('');
-    
-    document.getElementById('cart-items').innerHTML = html;
-    const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-    document.getElementById('cart-total').textContent = total.toLocaleString('pt-AO');
-    document.getElementById('cart-modal').style.display = 'flex';
+// ══════════════════════════════════════════════
+// FILTRO CATEGORIA
+// ══════════════════════════════════════════════
+window.filterCat = function(cat) {
+  categoriaAtiva = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  aplicarFiltro();
+};
+
+// ══════════════════════════════════════════════
+// CARRINHO
+// ══════════════════════════════════════════════
+window.addToCart = function(id) {
+  const p = todosOsProdutos.find(x => x.id === id);
+  if (!p) return;
+  if (carrinho[id]) {
+    if (carrinho[id].qty < (p.stock || 0)) carrinho[id].qty++;
+  } else {
+    carrinho[id] = { produto: p, qty: 1 };
+  }
+  atualizarCartBtn();
+  feedbackBtn(id);
+};
+
+function feedbackBtn(id) {
+  const card = document.getElementById(`card-${id}`);
+  if (!card) return;
+  const btn = card.querySelector('.add-btn');
+  if (!btn) return;
+  btn.textContent = '✓';
+  btn.style.background = 'var(--gold)';
+  btn.style.color = 'var(--navy)';
+  setTimeout(() => { btn.textContent = '+'; btn.style.background = ''; btn.style.color = ''; }, 700);
 }
 
-function removeFromCart(i) {
-    cart.splice(i,1);
-    showCart();
-    updateCartCount();
+function atualizarCartBtn() {
+  const total = Object.values(carrinho).reduce((s, i) => s + i.qty, 0);
+  const btn = document.getElementById('cart-btn');
+  const count = document.getElementById('cart-count');
+  count.textContent = total;
+  if (total > 0) btn.classList.add('visible');
+  else btn.classList.remove('visible');
 }
 
-function checkout() {
-    alert("✅ Compra simulada com sucesso! (Total: " + document.getElementById('cart-total').textContent + " Kz)");
-    cart = [];
-    updateCartCount();
-    closeCart();
+window.changeQty = function(id, delta) {
+  if (!carrinho[id]) return;
+  carrinho[id].qty = Math.max(0, carrinho[id].qty + delta);
+  if (carrinho[id].qty === 0) delete carrinho[id];
+  renderCart();
+  atualizarCartBtn();
+};
+
+// ══════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════
+window.openCart = function() {
+  renderCart();
+  document.getElementById('modal').classList.add('open');
+};
+
+window.handleOverlayClick = function(e) {
+  if (e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+  }
+};
+
+function renderCart() {
+  const items = Object.values(carrinho);
+  const list = document.getElementById('cart-list');
+  const totalEl = document.getElementById('total-display');
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="empty-cart">Nenhum artigo adicionado.</div>';
+    totalEl.textContent = '0 Kz';
+    return;
+  }
+
+  list.innerHTML = items.map(({ produto: p, qty }) => `
+    <div class="cart-item">
+      <div class="cart-item-name">${p.nome}</div>
+      <div class="cart-item-qty">
+        <button class="qty-btn" onclick="changeQty('${p.id}', -1)">−</button>
+        <span class="qty-num">${qty}</span>
+        <button class="qty-btn" onclick="changeQty('${p.id}', 1)">+</button>
+      </div>
+      <div class="cart-item-price">${formatKz(p.preco * qty)}</div>
+    </div>
+  `).join('');
+
+  const total = items.reduce((s, { produto, qty }) => s + produto.preco * qty, 0);
+  totalEl.textContent = formatKz(total);
 }
 
-// Tab switch
-function switchTab(n) {
-    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===n));
-    document.getElementById('tab0').style.display = n===0 ? 'block' : 'none';
-    document.getElementById('tab1').style.display = n===1 ? 'block' : 'none';
-}
+// ══════════════════════════════════════════════
+// ENVIAR WHATSAPP
+// ══════════════════════════════════════════════
+window.enviarWhatsApp = function() {
+  const items = Object.values(carrinho);
+  if (items.length === 0) { alert('Adiciona pelo menos um artigo.'); return; }
 
-// Admin
-function showAdmin() {
-    document.getElementById('admin-modal').style.display = 'flex';
-    document.getElementById('admin-pass').focus();
-}
+  const nome = document.getElementById('cliente-nome').value.trim() || 'Cliente';
+  const notas = document.getElementById('cliente-notas').value.trim();
+  const total = items.reduce((s, { produto, qty }) => s + produto.preco * qty, 0);
 
-function loginAdmin() {
-    if (document.getElementById('admin-pass').value === 'admin2026') {
-        isAdmin = true;
-        document.getElementById('admin-panel').style.display = 'block';
-        renderAdminPanel();
-    } else {
-        alert("Senha incorreta!");
-    }
-}
+  const linhas = items.map(({ produto, qty }) =>
+    `• ${qty}x ${produto.nome} — ${formatKz(produto.preco * qty)}`
+  ).join('\n');
 
-function renderAdminPanel() {
-    let html = '';
-    [...toucas, ...uniformes].forEach(p => {
-        html += `
-            <p>${p.name} 
-            <input type="number" value="${p.stock}" onchange="updateStock(${p.id}, this.value)" style="width:80px">
-            </p>`;
-    });
-    document.getElementById('admin-products').innerHTML = html;
-}
+  const pedidoId = Date.now().toString(36).toUpperCase();
 
-function updateStock(id, newStock) {
-    const all = [...toucas, ...uniformes];
-    const prod = all.find(p => p.id === id);
-    if (prod) prod.stock = parseInt(newStock);
-    renderProducts();
-}
+  let msg = `🛒 *NOVA ENCOMENDA — AGÁDOISÓ*\n`;
+  msg += `ID: #${pedidoId}\n`;
+  msg += `Cliente: ${nome}\n\n`;
+  msg += `*Artigos:*\n${linhas}\n\n`;
+  msg += `*Total: ${formatKz(total)}*`;
+  if (notas) msg += `\n\nNotas: ${notas}`;
+  msg += `\n\n_Confirmar esta encomenda:_\nhttps://agadoiso.github.io/loja/confirmar.html?id=${pedidoId}`;
 
-// Helpers
-function closeModal() { document.getElementById('admin-modal').style.display = 'none'; }
-function closeCart() { document.getElementById('cart-modal').style.display = 'none'; }
+  const url = `https://wa.me/${window.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
 
-// Init
-renderProducts();
+  // Regista encomenda no Firebase (opcional, para histórico)
+  // Podes descomentar quando configurares o Firebase
+  /*
+  const pedido = {
+    id: pedidoId,
+    cliente: nome,
+    notas,
+    itens: items.map(({ produto, qty }) => ({ id: produto.id, nome: produto.nome, qty, preco: produto.preco })),
+    total,
+    status: 'pendente',
+    criadoEm: new Date().toISOString()
+  };
+  // window._addDoc(window._collection(window._db, 'encomendas'), pedido);
+  */
+
+  document.getElementById('modal').classList.remove('open');
+};
 </script>
+
 </body>
 </html>
