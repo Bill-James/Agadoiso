@@ -622,7 +622,7 @@ window.enviarWhatsApp = function() {
   msg += `*Artigos:*\n${linhas}\n\n`;
   msg += `*Total: ${formatKz(total)}*`;
   if (notas) msg += `\n\nNotas: ${notas}`;
-  msg += `\n\n_Confirmar esta encomenda:_\nhttps://agadoiso.github.io/loja/confirmar.html?id=${pedidoId}`;
+  msg += `\n\n_Confirmar esta encomenda:_\nhttps://bill-james.github.io/Agadoiso/confirmar.html?id=${pedidoId}`;
 
   const url = `https://wa.me/${window.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
