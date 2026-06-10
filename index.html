@@ -352,18 +352,18 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, doc, updateDoc, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   // ══════════════════════════════════════════════
   // 🔧 CONFIGURAÇÃO FIREBASE — substitui com os teus dados
   // ══════════════════════════════════════════════
   const firebaseConfig = {
     apiKey: "AIzaSyBjMhJ0ueQvUzg6405aqcEB7teDgYvdsz8",
-    authDomain: "agadoiso-loja.firebaseapp.com",
-    projectId: "agadoiso-loja",
-    storageBucket: "agadoiso-loja.firebasestorage.app",
-    messagingSenderId: "922369014019",
-    appId: "1:922369014019:web:a317acc1cf05fbeacc5136"
+authDomain: "agadoiso-loja.firebaseapp.com",
+projectId: "agadoiso-loja",
+storageBucket: "agadoiso-loja.firebasestorage.app",
+messagingSenderId: "922369014019",
+appId: "1:922369014019:web:a317acc1cf05fbeacc5136"
   };
 
   // ══════════════════════════════════════════════
@@ -377,8 +377,6 @@
   window._db = db;
   window._collection = collection;
   window._onSnapshot = onSnapshot;
-  window._doc = doc;
-  window._updateDoc = updateDoc;
 
   // Carrega produtos em tempo real
   const prodRef = collection(db, "produtos");
@@ -602,7 +600,7 @@ function renderCart() {
 // ══════════════════════════════════════════════
 // ENVIAR WHATSAPP
 // ══════════════════════════════════════════════
-window.enviarWhatsApp = function() {
+window.enviarWhatsApp = async function() {
   const items = Object.values(carrinho);
   if (items.length === 0) { alert('Adiciona pelo menos um artigo.'); return; }
 
@@ -627,20 +625,21 @@ window.enviarWhatsApp = function() {
   const url = `https://wa.me/${window.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
 
-  // Regista encomenda no Firebase (opcional, para histórico)
-  // Podes descomentar quando configurares o Firebase
-  /*
+  // Grava encomenda no Firestore com o pedidoId como chave
   const pedido = {
-    id: pedidoId,
     cliente: nome,
-    notas,
+    notas: notas || '',
     itens: items.map(({ produto, qty }) => ({ id: produto.id, nome: produto.nome, qty, preco: produto.preco })),
     total,
     status: 'pendente',
     criadoEm: new Date().toISOString()
   };
-  // window._addDoc(window._collection(window._db, 'encomendas'), pedido);
-  */
+  try {
+    const { setDoc, doc: _doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await setDoc(_doc(window._db, 'encomendas', pedidoId), pedido);
+  } catch(e) {
+    console.error('Erro ao gravar encomenda:', e);
+  }
 
   document.getElementById('modal').classList.remove('open');
 };
