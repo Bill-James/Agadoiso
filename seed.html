@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Agádoisó — Carregar Produtos</title>
+<style>
+  body { font-family: sans-serif; background: #0a1628; color: #fff; padding: 2rem; max-width: 600px; margin: 0 auto; }
+  h2 { color: #c8a84b; margin-bottom: 0.5rem; }
+  p { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 1.5rem; }
+  button { background: #c8a84b; color: #0a1628; border: none; padding: 1rem 2rem; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; }
+  button:disabled { opacity: 0.4; cursor: default; }
+  #log { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  .linha { font-size: 0.85rem; padding: 0.5rem 0.75rem; border-radius: 8px; background: rgba(255,255,255,0.05); }
+  .ok { color: #5fcc96; }
+  .err { color: #f47272; }
+  .info { color: #c8a84b; }
+</style>
+</head>
+<body>
+
+<h2>Carregar Produtos — Agádoisó</h2>
+<p>Abre esta página no browser depois de configurares o Firebase. Clica no botão e todos os produtos são adicionados ao Firestore automaticamente.</p>
+
+<button id="btn" onclick="seed()">▶ Carregar todos os produtos</button>
+
+<div id="log"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ══════════════════════════════════════════════
+  // 🔧 MESMA CONFIG — copia do index.html
+  // ══════════════════════════════════════════════
+  const firebaseConfig = {
+    apiKey: "SUBSTITUI_AQUI",
+    authDomain: "SUBSTITUI_AQUI",
+    projectId: "SUBSTITUI_AQUI",
+    storageBucket: "SUBSTITUI_AQUI",
+    messagingSenderId: "SUBSTITUI_AQUI",
+    appId: "SUBSTITUI_AQUI"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const PRODUTOS = [
+    // ── UNIFORMES GERAIS ──
+    { id: "u01", nome: "T-Shirt sem nome nas costas",           categoria: "uniformes",  preco: 33000, stock: 0, validade: "Anual" },
+    { id: "u02", nome: "Calção",                                categoria: "uniformes",  preco: 30000, stock: 0, validade: "Anual" },
+    { id: "u03", nome: "Calça",                                 categoria: "uniformes",  preco: 47000, stock: 0, validade: "Anual" },
+    { id: "u04", nome: "Casaco",                                categoria: "uniformes",  preco: 54000, stock: 0, validade: "Anual" },
+    { id: "u05", nome: "Mayo Lycra",                            categoria: "uniformes",  preco: 48000, stock: 0, validade: "Anual" },
+    { id: "u06", nome: "Camisola sem mangas sem nome",          categoria: "uniformes",  preco: 32000, stock: 0, validade: "Anual" },
+    // ── SWIM TEAM ──
+    { id: "s01", nome: "T-Shirt Amarelinhos Swim Team",         categoria: "swim",       preco: 35000, stock: 0, validade: "Anual" },
+    // ── REMO ──
+    { id: "r01", nome: "T-Shirt Equipa de Remo",                categoria: "remo",       preco: 35000, stock: 0, validade: "Anual" },
+    // ── VELA ──
+    { id: "v01", nome: "T-Shirt Equipa de Vela",                categoria: "vela",       preco: 35000, stock: 0, validade: "Anual" },
+    { id: "v02", nome: "Camisola sem mangas Equipa de Vela",    categoria: "vela",       preco: 32000, stock: 0, validade: "Anual" },
+    // ── CANOAGEM ──
+    { id: "c01", nome: "T-Shirt Equipa de Canoagem",            categoria: "canoagem",   preco: 35000, stock: 0, validade: "Anual" },
+    { id: "c02", nome: "Camisola sem mangas Equipa de Canoagem",categoria: "canoagem",   preco: 32000, stock: 0, validade: "Anual" },
+    // ── TOUCAS ──
+    { id: "t01", nome: "Touca CNIL Desatada — Amarelo/Preto/Cinzento", categoria: "toucas", preco: 11000, stock: 0, validade: "Anual" },
+    { id: "t02", nome: "Touca CNIL Normal — Preto/Azul/Cinzento",      categoria: "toucas", preco:  9000, stock: 0, validade: "Anual" },
+    { id: "t03", nome: "Touca Normal — Preto/Azul/Cinzento",           categoria: "toucas", preco:  8000, stock: 0, validade: "Anual" },
+    { id: "t04", nome: "Touca Afro",                                   categoria: "toucas", preco: 18000, stock: 0, validade: "Anual" },
+    { id: "t05", nome: "Touca Agádoisó Criança Silicone — Azul/Rosa",  categoria: "toucas", preco:  9500, stock: 0, validade: "Anual" },
+  ];
+
+  function log(msg, tipo = "ok") {
+    const div = document.getElementById("log");
+    const linha = document.createElement("div");
+    linha.className = "linha " + tipo;
+    linha.textContent = msg;
+    div.appendChild(linha);
+  }
+
+  window.seed = async function() {
+    const btn = document.getElementById("btn");
+    btn.disabled = true;
+    btn.textContent = "A carregar...";
+    document.getElementById("log").innerHTML = "";
+
+    log("A iniciar...", "info");
+
+    let ok = 0, erros = 0;
+
+    for (const p of PRODUTOS) {
+      try {
+        await setDoc(doc(db, "produtos", p.id), p);
+        log(`✓ ${p.nome}`, "ok");
+        ok++;
+      } catch (e) {
+        log(`✗ Erro em "${p.nome}": ${e.message}`, "err");
+        erros++;
+      }
+    }
+
+    if (erros === 0) {
+      log(`─────────────────────────────`, "info");
+      log(`✅ ${ok} produtos carregados com sucesso!`, "info");
+      btn.textContent = "✓ Concluído";
+    } else {
+      log(`⚠ ${ok} ok, ${erros} com erro. Verifica a configuração Firebase.`, "err");
+      btn.disabled = false;
+      btn.textContent = "Tentar novamente";
+    }
+  };
+</script>
+
+</body>
+</html>
