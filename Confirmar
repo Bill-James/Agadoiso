@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agádoisó — Confirmar Encomenda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --gold: #c8a84b;
+    --gold-light: #e8cc7a;
+    --white: #ffffff;
+    --border: rgba(200,168,75,0.25);
+    --success: #2d6a4f;
+    --danger: #7f1d1d;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 2rem 1.25rem 4rem;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    margin-bottom: 0.25rem;
+  }
+  .logo span { color: var(--white); }
+  .page-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.12em;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 460px;
+    margin-bottom: 1rem;
+  }
+  .card-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 0.6rem;
+  }
+  .order-id {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+  }
+  .client-name {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+  }
+  .item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(200,168,75,0.1);
+    font-size: 0.9rem;
+  }
+  .item-row:last-child { border-bottom: none; }
+  .item-qty { color: var(--gold); font-weight: 500; margin-right: 0.4rem; }
+  .item-price { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; color: var(--gold); }
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .total-label { font-size: 0.82rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em; }
+  .total-amount { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--gold); }
+
+  /* STATUS */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 50px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+  }
+  .status-pendente { background: rgba(200,168,75,0.15); color: var(--gold-light); border: 1px solid rgba(200,168,75,0.3); }
+  .status-confirmado { background: rgba(45,106,79,0.2); color: #5fcc96; border: 1px solid rgba(95,204,150,0.25); }
+  .status-cancelado { background: rgba(180,50,50,0.15); color: #f47272; border: 1px solid rgba(244,114,114,0.2); }
+
+  /* BOTÕES */
+  .btn-row { display: flex; gap: 0.75rem; width: 100%; max-width: 460px; margin-top: 0.5rem; }
+  .btn {
+    flex: 1;
+    padding: 0.9rem;
+    border-radius: 12px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .btn:active { opacity: 0.85; transform: scale(0.97); }
+  .btn-confirm { background: var(--gold); color: var(--navy); }
+  .btn-cancel { background: rgba(180,50,50,0.2); color: #f47272; border: 1px solid rgba(244,114,114,0.2); }
+  .btn-confirm:disabled, .btn-cancel:disabled { opacity: 0.4; pointer-events: none; }
+
+  .done-msg {
+    text-align: center;
+    padding: 2rem;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.6);
+    display: none;
+  }
+  .done-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  .done-msg.show { display: block; }
+
+  /* ESTADO DE LOADING */
+  .loading { text-align: center; color: rgba(255,255,255,0.3); font-size: 0.9rem; padding: 3rem 0; }
+
+  /* ADMIN SECTION — Stock update */
+  .admin-section {
+    width: 100%;
+    max-width: 460px;
+    margin-top: 2rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+  }
+  .admin-title {
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="logo">Agá<span>doisó</span></div>
+<div class="page-title">Confirmar Encomenda</div>
+
+<div id="main-content">
+  <div class="loading">A carregar encomenda...</div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ══════════════════════════════════════════════
+  // 🔧 MESMA CONFIG DO index.html
+  // ══════════════════════════════════════════════
+  const firebaseConfig = {
+    apiKey: "SUBSTITUI_AQUI",
+    authDomain: "SUBSTITUI_AQUI",
+    projectId: "SUBSTITUI_AQUI",
+    storageBucket: "SUBSTITUI_AQUI",
+    messagingSenderId: "SUBSTITUI_AQUI",
+    appId: "SUBSTITUI_AQUI"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  function formatKz(v) {
+    return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 })
+      .format(v).replace('AOA', 'Kz').trim();
+  }
+
+  // Lê o ID da URL
+  const params = new URLSearchParams(window.location.search);
+  const pedidoId = params.get('id');
+  const main = document.getElementById('main-content');
+
+  if (!pedidoId) {
+    main.innerHTML = `<div class="loading">Nenhuma encomenda especificada.</div>`;
+  } else {
+    // Tenta carregar do Firebase
+    const pedidoRef = doc(db, 'encomendas', pedidoId);
+    const snap = await getDoc(pedidoRef);
+
+    if (!snap.exists()) {
+      // Se não existe no Firebase, mostra UI manual (para quando não guardaste no Firestore)
+      renderManual(pedidoId);
+    } else {
+      const pedido = snap.data();
+      renderPedido(pedido, pedidoRef, db);
+    }
+  }
+
+  function renderManual(id) {
+    main.innerHTML = `
+      <div class="card">
+        <div class="card-label">ID da Encomenda</div>
+        <div class="order-id">#${id}</div>
+        <p style="margin-top:1rem;font-size:0.88rem;color:rgba(255,255,255,0.45);line-height:1.6">
+          Esta encomenda foi enviada pelo WhatsApp. Confirma manualmente e actualiza o stock abaixo.
+        </p>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-title">Actualização manual de stock</div>
+        <div id="done-manual" class="done-msg">
+          <div class="done-icon">✅</div>
+          Marcado como confirmado.
+        </div>
+        <button class="btn btn-confirm" style="width:100%" onclick="document.getElementById('done-manual').classList.add('show');this.disabled=true">
+          ✓ Marcar como confirmado
+        </button>
+      </div>
+    `;
+  }
+
+  function renderPedido(pedido, pedidoRef, db) {
+    const { id, cliente, itens = [], total, status = 'pendente', notas } = pedido;
+    const isConfirmado = status === 'confirmado';
+    const isCancelado = status === 'cancelado';
+
+    let badgeClass = 'status-pendente';
+    let badgeText = '⏳ Pendente';
+    if (isConfirmado) { badgeClass = 'status-confirmado'; badgeText = '✓ Confirmado'; }
+    if (isCancelado) { badgeClass = 'status-cancelado'; badgeText = '✕ Cancelado'; }
+
+    const itensHTML = itens.map(i => `
+      <div class="item-row">
+        <div><span class="item-qty">${i.qty}x</span>${i.nome}</div>
+        <div class="item-price">${formatKz(i.preco * i.qty)}</div>
+      </div>
+    `).join('');
+
+    main.innerHTML = `
+      <span class="status-badge ${badgeClass}">${badgeText}</span>
+
+      <div class="card">
+        <div class="card-label">Cliente</div>
+        <div class="client-name">${cliente}</div>
+        ${notas ? `<div style="font-size:0.82rem;color:rgba(255,255,255,0.4);margin-top:0.3rem">Notas: ${notas}</div>` : ''}
+      </div>
+
+      <div class="card">
+        <div class="card-label">Artigos</div>
+        ${itensHTML}
+        <div class="total-row">
+          <span class="total-label">Total</span>
+          <span class="total-amount">${formatKz(total)}</span>
+        </div>
+      </div>
+
+      <div id="done-msg" class="done-msg"></div>
+
+      ${!isConfirmado && !isCancelado ? `
+      <div class="btn-row">
+        <button class="btn btn-cancel" id="btn-cancel" onclick="acaoPedido('cancelado')">✕ Cancelar</button>
+        <button class="btn btn-confirm" id="btn-confirm" onclick="acaoPedido('confirmado')">✓ Confirmar</button>
+      </div>
+      ` : ''}
+    `;
+
+    window.acaoPedido = async function(novoStatus) {
+      const btnConfirm = document.getElementById('btn-confirm');
+      const btnCancel = document.getElementById('btn-cancel');
+      if (btnConfirm) btnConfirm.disabled = true;
+      if (btnCancel) btnCancel.disabled = true;
+
+      try {
+        await updateDoc(pedidoRef, { status: novoStatus, actualizadoEm: new Date().toISOString() });
+
+        // Se confirmado, dá baixa no stock
+        if (novoStatus === 'confirmado') {
+          for (const item of itens) {
+            const prodRef = doc(db, 'produtos', item.id);
+            await updateDoc(prodRef, { stock: increment(-item.qty) });
+          }
+        }
+
+        const done = document.getElementById('done-msg');
+        done.classList.add('show');
+        if (novoStatus === 'confirmado') {
+          done.innerHTML = `<div class="done-icon">✅</div>Encomenda confirmada! Stock actualizado.`;
+        } else {
+          done.innerHTML = `<div class="done-icon">❌</div>Encomenda cancelada.`;
+        }
+
+        if (btnConfirm) btnConfirm.style.display = 'none';
+        if (btnCancel) btnCancel.style.display = 'none';
+
+      } catch(e) {
+        alert('Erro ao actualizar: ' + e.message);
+        if (btnConfirm) btnConfirm.disabled = false;
+        if (btnCancel) btnCancel.disabled = false;
+      }
+    };
+  }
+</script>
+
+</body>
+</html>
